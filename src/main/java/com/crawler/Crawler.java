@@ -2,6 +2,8 @@ package com.crawler;
 
 import com.crawler.fetch.Fetcher;
 import com.crawler.fetch.FetchResult;
+import com.crawler.frontier.Frontier;
+import com.crawler.frontier.Task;
 import com.crawler.parse.LinkExtractor;
 import com.crawler.politeness.PolitenessManager;
 import com.crawler.robots.RobotsManager;
@@ -17,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Crawler {
     private final CrawlConfig config;
-    private final Frontier frontier = new Frontier();
+    private final Frontier frontier;
     private final Set<String> visited = ConcurrentHashMap.newKeySet();
     private final AtomicInteger pagesCrawled = new AtomicInteger(0);
 
@@ -27,8 +29,9 @@ public class Crawler {
     private final RobotsManager robots;
     private final PageStore pageStore;
 
-    public Crawler(CrawlConfig config, PageStore pageStore) {
+    public Crawler(CrawlConfig config, Frontier frontier, PageStore pageStore) {
         this.config = config;
+        this.frontier = frontier;
         this.pageStore = pageStore;
         this.fetcher = new Fetcher(config.maxRetries());
         this.politeness = new PolitenessManager();
@@ -57,25 +60,25 @@ public class Crawler {
 
     private void worker() {
         while (true) {
-            String url;
+            Task task;
             try {
-                url = frontier.next();
+                task = frontier.next();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
             }
 
-            if (url == null) {
-                if (frontier.isDrained()) return;
+            if (task == null) {
+                if (frontier.isExhausted()) return;
                 continue;
             }
 
             try {
-                process(url);
+                process(task.url());
             } catch (Exception e) {
-                System.out.println("  ! error on " + url + " : " + e.getMessage());
+                System.out.println("  ! error on " + task.url() + " : " + e.getMessage());
             } finally {
-                frontier.complete();
+                frontier.complete(task);
             }
         }
     }
