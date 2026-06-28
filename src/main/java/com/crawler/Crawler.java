@@ -1,5 +1,6 @@
 package com.crawler;
 
+import com.crawler.dedup.VisitedSet;
 import com.crawler.fetch.Fetcher;
 import com.crawler.fetch.FetchResult;
 import com.crawler.frontier.Frontier;
@@ -11,8 +12,6 @@ import com.crawler.store.PageStore;
 import com.crawler.url.UrlNormalizer;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Crawler {
     private final CrawlConfig config;
     private final Frontier frontier;
-    private final Set<String> visited = ConcurrentHashMap.newKeySet();
+    private final VisitedSet visited;
     private final AtomicInteger pagesCrawled = new AtomicInteger(0);
 
     private final Fetcher fetcher;
@@ -29,10 +28,11 @@ public class Crawler {
     private final RobotsManager robots;
     private final PageStore pageStore;
 
-    public Crawler(CrawlConfig config, Frontier frontier, PageStore pageStore) {
+    public Crawler(CrawlConfig config, Frontier frontier, PageStore pageStore, VisitedSet visited) {
         this.config = config;
         this.frontier = frontier;
         this.pageStore = pageStore;
+        this.visited = visited;
         this.fetcher = new Fetcher(config.maxRetries());
         this.politeness = new PolitenessManager();
         this.robots = new RobotsManager(fetcher, Fetcher.PRODUCT_TOKEN);
@@ -43,7 +43,7 @@ public class Crawler {
 
         for (String seed : config.seeds()) {
             UrlNormalizer.normalize(seed).ifPresent(url -> {
-                if (visited.add(url)) frontier.add(url);
+                if (visited.markIfNew(url)) frontier.add(url);
             });
         }
 
@@ -128,7 +128,7 @@ public class Crawler {
                 Optional<String> nextHost = UrlNormalizer.hostOf(next);
                 if (nextHost.isEmpty() || !nextHost.get().equals(host)) continue;
 
-                if (visited.add(next)) frontier.add(next);
+                if (visited.markIfNew(next)) frontier.add(next);
             }
         } finally {
             if (!saved) releaseSlot();

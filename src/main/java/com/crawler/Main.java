@@ -1,5 +1,8 @@
 package com.crawler;
 
+import com.crawler.dedup.DynamoVisitedSet;
+import com.crawler.dedup.InMemoryVisitedSet;
+import com.crawler.dedup.VisitedSet;
 import com.crawler.frontier.Frontier;
 import com.crawler.frontier.InMemoryFrontier;
 import com.crawler.frontier.SqsFrontier;
@@ -21,17 +24,19 @@ public class Main {
         );
 
         // Frontier: where the URL queue lives.
-        // In-memory (single process):
         // Frontier frontier = new InMemoryFrontier();
-        // Amazon SQS (shared, durable): queueName, region, waitSeconds, visibilityTimeout, maxEmptyPolls
         Frontier frontier = new SqsFrontier("trawl-frontier", "us-east-1", 20, 60, 2);
 
         // Store: where crawled pages go.
         // PageStore store = new LocalPageStore("crawl-output");
         PageStore store = new S3PageStore("trawl-pages-greeshma-2026", "us-east-1", "pages");
 
-        try (frontier; store) {
-            new Crawler(config, frontier, store).run();
+        // Dedup: which URLs have been claimed.
+        // VisitedSet visited = new InMemoryVisitedSet();
+        VisitedSet visited = new DynamoVisitedSet("trawl-visited", "us-east-1");
+
+        try (frontier; store; visited) {
+            new Crawler(config, frontier, store, visited).run();
         }
     }
 }
