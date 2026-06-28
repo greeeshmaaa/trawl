@@ -84,7 +84,7 @@ a sandbox site built for practicing crawlers. Saved pages land in `crawl-output/
 
 Phase 1 is built so the cloud jump is a series of localized swaps, not a rewrite:
 
-- [ ] **Hardening** — robots.txt compliance, retry/backoff with max attempts, strict page limit
+- [x] **Hardening** — robots.txt compliance, retry/backoff with max attempts, strict page limit
 - [ ] **Frontier → Amazon SQS** — workers pull from a shared queue; visibility timeouts
       give retry-on-worker-death for free
 - [ ] **LocalPageStore → Amazon S3** — one new class implementing `PageStore`
