@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         CrawlConfig config = new CrawlConfig(
             List.of("https://books.toscrape.com/"),
-            50,
+            400,
             20,
             500,
             3,
