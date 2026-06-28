@@ -5,10 +5,12 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         CrawlConfig config = new CrawlConfig(
-            List.of("https://books.toscrape.com/"), // seed(s)
-            50,    // maxPages
-            20,    // concurrency (virtual threads)
-            500    // perDomainDelayMs (be polite)
+            List.of("https://books.toscrape.com/"),
+            50,
+            20,
+            500,
+            3,
+            true
         );
         new Crawler(config).run();
     }

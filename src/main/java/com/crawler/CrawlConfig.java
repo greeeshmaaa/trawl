@@ -6,5 +6,7 @@ public record CrawlConfig(
     List<String> seeds,
     int maxPages,
     int concurrency,
-    long perDomainDelayMs
+    long perDomainDelayMs,
+    int maxRetries,
+    boolean respectRobots
 ) {}
