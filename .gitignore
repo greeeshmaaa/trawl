@@ -1,0 +1,5 @@
+target/
+crawl-output/
+*.class
+.vscode/
+.idea/
