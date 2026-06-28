@@ -5,7 +5,6 @@ import com.crawler.fetch.FetchResult;
 import com.crawler.parse.LinkExtractor;
 import com.crawler.politeness.PolitenessManager;
 import com.crawler.robots.RobotsManager;
-import com.crawler.store.LocalPageStore;
 import com.crawler.store.PageStore;
 import com.crawler.url.UrlNormalizer;
 
@@ -28,16 +27,12 @@ public class Crawler {
     private final RobotsManager robots;
     private final PageStore pageStore;
 
-    public Crawler(CrawlConfig config) {
+    public Crawler(CrawlConfig config, PageStore pageStore) {
         this.config = config;
+        this.pageStore = pageStore;
         this.fetcher = new Fetcher(config.maxRetries());
         this.politeness = new PolitenessManager();
         this.robots = new RobotsManager(fetcher, Fetcher.PRODUCT_TOKEN);
-        try {
-            this.pageStore = new LocalPageStore("crawl-output");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to init page store", e);
-        }
     }
 
     public void run() {
