@@ -1,0 +1,28 @@
+{
+  "family": "trawl-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "executionRoleArn": "arn:aws:iam::312394852367:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::312394852367:role/trawlTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "trawl",
+      "image": "312394852367.dkr.ecr.us-east-1.amazonaws.com/trawl:latest",
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/trawl",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "trawl"
+        }
+      }
+    }
+  ]
+}
