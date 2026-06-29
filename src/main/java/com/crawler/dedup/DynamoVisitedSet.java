@@ -11,9 +11,11 @@ import java.util.Map;
 public class DynamoVisitedSet implements VisitedSet {
     private final DynamoDbClient db;
     private final String table;
+    private final String keyPrefix;
 
-    public DynamoVisitedSet(String tableName, String region) {
+    public DynamoVisitedSet(String tableName, String region, String keyPrefix) {
         this.table = tableName;
+        this.keyPrefix = keyPrefix == null ? "" : keyPrefix;
         this.db = DynamoDbClient.builder().region(Region.of(region)).build();
     }
 
@@ -22,7 +24,7 @@ public class DynamoVisitedSet implements VisitedSet {
         try {
             db.putItem(PutItemRequest.builder()
                 .tableName(table)
-                .item(Map.of("url", AttributeValue.builder().s(url).build()))
+                .item(Map.of("url", AttributeValue.builder().s(keyPrefix + url).build()))
                 .conditionExpression("attribute_not_exists(#u)")
                 .expressionAttributeNames(Map.of("#u", "url"))
                 .build());
